@@ -10,8 +10,8 @@ Author URI: http://hyperspatial.com
 
 //Options - Setup your Slider Here
 define('WPSL_LIMIT',5);
-define('WPSL_WIDTH',600);
-define('WPSL_HEIGHT',400);
+define('WPSL_WIDTH',636);
+define('WPSL_HEIGHT',256);
 
 //Init
 add_action('get_header','wpsl_init');
@@ -73,6 +73,7 @@ function wpsl_register_options(){
 }
 /* Settings Page */
 function wpsl_settings_page(){
+	wpsl_set_option_defaults();
 	global $wpsl_field_names,$wpsl_animations;
 	$slider_option_array = wpsl_get_slider_dynamic_options();
 	$wpsl_field_names = array_merge($wpsl_field_names,$slider_option_array);
@@ -192,29 +193,36 @@ function wpsl_get_slider(){
 
 /* Get Slider Setting */
 function wpsl_get_slider_setting($name){
-	global $wpsl_animations;
 	$slider_setting = get_option('wpsl_slider_' . $name);
-	switch($name){
-		case 'animation': 
-		if(in_array($slider_setting,$wpsl_animations)) echo $slider_setting;
-		else echo 'slide';
-		break;
-		case 'slideshowspeed': 
-		if($slider_setting) echo $slider_setting;
-		else echo '4000';
-		break;
-		case 'animationduration': 
-		if($slider_setting) echo $slider_setting;
-		else echo '1000';
-		break;
-		default:
-		return;
-	}
-	return $slider_setting;
+	echo $slider_setting;
 }
 
 /* Init */
-function wpsl_init(){ if(is_home()) add_action('wp_head','wpsl_print_script'); }
+function wpsl_init(){
+	if(is_home() || is_front_page()) //Comment out this line to show backpage slider
+	add_action('wp_head','wpsl_print_script');
+}
+
+/* Defaults */
+function wpsl_set_option_defaults(){
+	global $wpsl_field_names;
+	foreach($wpsl_field_names as $field){
+		switch($field){
+			case 'wpsl_slider_animation':
+			if(get_option('wpsl_slider_animation') == '') update_option('wpsl_slider_animation','fade');
+			break;
+			case 'wpsl_slider_slideshowspeed':
+			if(get_option('wpsl_slider_slideshowspeed') == '') update_option('wpsl_slider_slideshowspeed','4000');
+			break;
+			case 'wpsl_slider_animationduration':
+			if(get_option('wpsl_slider_animationduration') == '') update_option('wpsl_slider_animationduration','1000');
+			break;
+			default:
+			return;
+		}
+	}	
+	return true;
+}
 
 /* Print Script */
 function wpsl_print_script(){?>
