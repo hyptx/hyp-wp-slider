@@ -1,20 +1,20 @@
 <?php
 /*
-Plugin Name: WP Slider
-Plugin URI: http://hyperspatial.com
-Description: An admin page slider controller or jQuery Cycle
+Plugin Name: WP Hyp Slider
+Plugin URI: http://wp-slider.myhyperspace.com
+Description: An admin page slider controller for jQuery Cycle
 Author: Adam J Nowak
 Version: 1.0
 Author URI: http://hyperspatial.com
 */
 
+//Options - Setup your Slider Here
+define('WPSL_LIMIT',5);
+define('WPSL_WIDTH',600);
+define('WPSL_HEIGHT',400);
+
 //Init
 add_action('get_header','wpsl_init');
-
-//Options
-define('WPSL_LIMIT',5);
-define('WPSL_WIDTH',636);
-define('WPSL_HEIGHT',256);
 
 //Plugin Url
 define('WPSL_PLUGIN',WP_PLUGIN_URL . '/hyp-slider/');
