@@ -97,7 +97,7 @@ function wpsl_settings_page(){
 	form .remaining{background-color:#FFF0D3; width:3em}
 	div.left{float:left; margin:0 32px 20px 0}
 	.slide-card{width:598px; padding:1em; margin-bottom:1.5em; background:#E8E0D5}
-	.slide-card img{float:right; margin-top:64px}
+	.slide-card img{float:right; margin-top:37px}
 	.wrap .save-btn{float:right; border:none; background:none; color:#21759B; font-size:14px; font-weight:normal; cursor:pointer; margin:0; padding:0}
 	.wrap .save-btn:hover{color:#D54E21}
 	.wrap #anim-dropdown{height:24px; font-size:13px}
