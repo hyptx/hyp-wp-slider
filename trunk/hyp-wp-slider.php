@@ -1,257 +1,220 @@
 <?php
 /*
-Plugin Name: WP Hyp Slider
+Plugin Name: Hyp WP Slider
 Plugin URI: http://wp-slider.myhyperspace.com
-Description: An admin page slider controller for jQuery Cycle
+Description: An admin page slider controller for jQuery Cycle and Flex Slider
 Author: Adam J Nowak
 Version: 1.0
 Author URI: http://hyperspatial.com
 */
 
-//Options - Setup your Slider Here
-define('WPSL_LIMIT',5);
-define('WPSL_WIDTH',636);
-define('WPSL_HEIGHT',256);
+/*
+* Usage:
+*
+* <?php wps_slider() //For PHP template file like index.php ?>
+*
+* [wps_slider] <!-- Shortcode -->
+*/
 
-//Init
-add_action('get_header','wpsl_init');
+//File Paths
+define('WPS_PLUGIN',WP_PLUGIN_URL . '/hyp-wp-slider/');
+define('WPS_PLUGIN_SERVERPATH',str_replace('hyp-wp-slider.php','',__FILE__) . '/');
 
-//Plugin Url
-define('WPSL_PLUGIN',WP_PLUGIN_URL . '/hyp-slider/');
+//Files
+require(WPS_PLUGIN_SERVERPATH . 'admin.php');
 
-$wpsl_field_names = array(
-	'wpsl_slider_animation',
-	'wpsl_slider_slideshowspeed',
-	'wpsl_slider_animationduration',
-);
-
-$wpsl_animations = array(
-	'blindX',
-	'blindY',
-	'blindZ',
-    'cover',
-	'curtainX',
-	'curtainY',
-	'fade',
-	'fadeZoom',
-	'growX',
-	'growY',
-	'none',
-	'scrollUp',
-	'scrollDown',
-	'scrollLeft',
-	'scrollRight',
-	'scrollHorz',
-	'scrollVert',
-	'shuffle',
-	'slideX',
-	'slideY',
-	'toss',
-	'turnUp',
-	'turnDown',
-	'turnLeft',
-	'turnRight',
-	'uncover',
-	'wipe',
-	'zoom'
-);
-
-/* ~~~~~~~~~~~ Admin Page ~~~~~~~~~~~ */
-
-/* Admin Menu */
-function wpsl_create_admin_menu(){
-	add_menu_page('WP Slider','WP&nbsp;Slider',3,'wpsl-settings','wpsl_settings_page',WPSL_PLUGIN . 'icon.png');
-	add_action('admin_init','wpsl_register_options');
-}
-add_action('admin_menu','wpsl_create_admin_menu');
-/* Register wpsl Options */
-function wpsl_register_options(){
-	global $wpsl_field_names;
-	$slider_option_array = wpsl_get_slider_dynamic_options();
-	$wpsl_field_names = array_merge($wpsl_field_names,$slider_option_array);
-	foreach($wpsl_field_names as $field_name){ register_setting('wpsl_options',$field_name); }
-}
-/* Settings Page */
-function wpsl_settings_page(){
-	wpsl_set_option_defaults();
-	global $wpsl_field_names,$wpsl_animations;
-	$slider_option_array = wpsl_get_slider_dynamic_options();
-	$wpsl_field_names = array_merge($wpsl_field_names,$slider_option_array);
-	foreach($wpsl_field_names as $field_name){ ${$field_name} = get_option($field_name); }
-	?>
-	<style type="text/css">
-	.shadow{box-shadow:1px 1px 4px #333; -webkit-box-shadow:1px 1px 4px #333}
-	input[type="text"],textarea{color:#222; background-color:#f4f4f4}
-	.slide-card input[type="text"]{width:380px}
-	.help-text{font-size:11px; font-style:italic;}
-	.top-help{display:block; margin-top:-12px}
-	.example{color:#669;}
-	form {margin-top:20px;}
-	h3{margin-top:40px;border-bottom:1px solid #8E7556; width:620px; color:#8E7556; padding-bottom:5px; font-size:21px}
-	h4{font-size:16px; margin:0; padding:4px; background:#C9BBA8}
-	label{font-weight:bold;}
-	input.button-primary{margin-top:20px;}
-	.html-textarea{width:620px; height:140px; }
-	form p{margin-bottom:12px;}
-	.anchor{padding-top:20px}
-	#theme-dropdown{font-size:1.4em; height:1.6em; min-width:140px}
-	form .remaining{background-color:#FFF0D3; width:3em}
-	div.left{float:left; margin:0 32px 20px 0}
-	.slide-card{width:598px; padding:1em; margin-bottom:1.5em; background:#E8E0D5}
-	.slide-card img{float:right; margin-top:37px}
-	.wrap .save-btn{float:right; border:none; background:none; color:#21759B; font-size:14px; font-weight:normal; cursor:pointer; margin:0; padding:0}
-	.wrap .save-btn:hover{color:#D54E21}
-	.wrap #anim-dropdown{height:24px; font-size:13px}
-	</style>
-	<div class="wrap">
-		<h2>WP Slider Settings</h2>
-		<form name="settings" method="post" action="options.php">
-			<?php settings_fields('wpsl_options') ?>
-            <h3>Slider<input type="submit" class="save-btn" value="<?php _e('save') ?>" /></h3>
-            <p><em>Limit: <?php echo WPSL_LIMIT ?> Slides - Image Size: <?php echo WPSL_WIDTH ?> X <?php echo WPSL_HEIGHT ?></em></p>
-            <div class="left">
-            	<label>Animation Type</label><br />
-            	<select id="anim-dropdown" name="wpsl_slider_animation">
-					<?php foreach($wpsl_animations as $animation): ?>
-                    <option <?php if ($animation == $wpsl_slider_animation) echo 'selected="selected"' ?>><?php echo $animation ?></option>
-                    <?php endforeach ?>
-                </select>
-            </div>
-            <div class="left">
-            	<label>Slideshow Speed</label><br />
-            	<input name="wpsl_slider_slideshowspeed" type="text" value="<?php echo $wpsl_slider_slideshowspeed ?>" size="8"/> ms<br />
-                <span class="help-text">Default: 4000</span>
-            </div>
-            <div class="left">
-            	<label>Animation Speed</label><br />
-            	<input name="wpsl_slider_animationduration" type="text" value="<?php echo $wpsl_slider_animationduration ?>" size="8"/> ms<br />
-                <span class="help-text">Default: 1000</span>
-            </div>
-            <div style="clear:left">
-            	<?php wpsl_get_slider_cards($slider_option_array) ?>
-            </div>
-            
-            <p>
-                <input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" />
-            </p>
-    	</form>
-    </div><!--/.wrap-->
-    <?php
-}
-
-/* ~~~~~~~~~~~ Functions ~~~~~~~~~~~ */
-
-/* Get Slider Cards */
-function wpsl_get_slider_cards($slider_option_array){
-	$i = 1;
-	foreach($slider_option_array as $option){
-		$value = get_option($option);
-		if(preg_match('/link/',$option)) echo '<label>Hyperlink Url</label><br /><input name="wpsl_slider_' . $i . '_link" type="text" value="' . $value . '" /><br />';
-		else if(preg_match('/caption/',$option)){
-			echo '<label>Caption</label><br /><input name="wpsl_slider_' . $i . '_caption" type="text" value="' . $value . '" /></div>';
-			$i++;
-		}
-		else{
-			if($value != '') $imgtag = '<img src="' . $value . '" width="195"/>';
-			else $imgtag = '';
-			echo '<div class="slide-card shadow">' . $imgtag . '<h4>Slide ' . $i . ':</h4><br><label>Image Url</label><br /><input name="wpsl_slider_' . $i . '" type="text" value="' . $value . '" /><br />';
-		}
+/* Slider */
+function wps_slider($shortcode = false){
+	if($shortcode) ob_start();
+	$type = get_option('wps_slider_type');
+	switch($type){
+		case 'jQuery Cycle': $wps_slider = new WpsCycleSlider(); $wps_slider->get_slider();
+		break;
+		case 'Flex Slider': $wps_slider = new WpsFlexSlider(); $wps_slider->get_slider();
+		break;
+		default:
+		return;
 	}	
-}
-
-/* Get Slider Dynamic Options */
-function wpsl_get_slider_dynamic_options(){
-	$slider_option_array = array();
-	$i = 1;
-	while($i <= WPSL_LIMIT){
-		$option_name = 'wpsl_slider_' . $i;
-		$slider_option = get_option($option_name);
-		$slider_option_array[] = $option_name;
-		$slider_option_array[] = $option_name . '_link';
-		$slider_option_array[] = $option_name . '_caption';
-		if(!$slider_option) return $slider_option_array;
-		$i++;
-	}
-	return $slider_option_array;
-}
-
-/* Get Slider Dynamic Urls */
-function wpsl_get_slider(){
-	$i = 1;
-	while($i <= WPSL_LIMIT){
-		$url_option_name = 'wpsl_slider_' . $i;
-		$link_option_name = 'wpsl_slider_' . $i . '_link';
-		$caption_option_name = 'wpsl_slider_' . $i . '_caption';
-		$slider_url =  get_option($url_option_name);
-		$slider_link =  get_option($link_option_name);
-		$slider_caption =  get_option($caption_option_name);
-		if(!$slider_url) return;
-		echo '<img src="' . $slider_url . '" alt="' . $slider_caption . '" rel="' . $slider_link . '" width="' . WPSL_WIDTH . '" height="' . WPSL_HEIGHT . '" />';
-		$i++;
+	if($shortcode){
+		$main_function_output = ob_get_contents();
+		ob_end_clean();
+		return $main_function_output;
 	}
 }
-
-/* Get Slider Setting */
-function wpsl_get_slider_setting($name){
-	$slider_setting = get_option('wpsl_slider_' . $name);
-	echo $slider_setting;
+/* Enqueue Styles */
+function wps_enqueue_styles(){
+	if(is_home() || is_front_page()){
+		wp_enqueue_style('wps_style', WPS_PLUGIN . 'scripts/flexslider/flexslider.css');
+	}
 }
-
-/* Init */
-function wpsl_init(){
-	if(is_home() || is_front_page()) //Comment out this line to show backpage slider
-	add_action('wp_head','wpsl_print_script');
-}
-
-/* Defaults */
-function wpsl_set_option_defaults(){
-	global $wpsl_field_names;
-	foreach($wpsl_field_names as $field){
-		switch($field){
-			case 'wpsl_slider_animation':
-			if(get_option('wpsl_slider_animation') == '') update_option('wpsl_slider_animation','fade');
+/* Enqueue Javascript */
+function wps_enqueue_js(){
+	if(is_home() || is_front_page()){
+		$chosen_animation = get_option('wps_slider_type');
+		wp_enqueue_script('jquery');
+		switch($chosen_animation){
+			case 'jQuery Cycle': wp_enqueue_script('wps_cycle', WPS_PLUGIN . 'scripts/cycle/jquery.cycle.all.js');
 			break;
-			case 'wpsl_slider_slideshowspeed':
-			if(get_option('wpsl_slider_slideshowspeed') == '') update_option('wpsl_slider_slideshowspeed','4000');
-			break;
-			case 'wpsl_slider_animationduration':
-			if(get_option('wpsl_slider_animationduration') == '') update_option('wpsl_slider_animationduration','1000');
+			case 'Flex Slider': wp_enqueue_script('wps_flex', WPS_PLUGIN . 'scripts/flexslider/jquery.flexslider-min.js');
 			break;
 			default:
 			return;
 		}
-	}	
-	return true;
+	}
 }
+/* Slider Shortcode - [wps_slider] */
+function wps_slider_shortcode(){ return wps_slider(true); }
 
-/* Print Script */
-function wpsl_print_script(){?>
-	<script type="text/javascript">
-    jQuery(document).ready(function() {
-		 jQuery(document).ready(function(){
-			jQuery('#home-slider').cycle({
-				fx:        "<?php wpsl_get_slider_setting('animation') ?>", 
-				timeout:    <?php wpsl_get_slider_setting('slideshowspeed') ?>, 
-				speed:		<?php wpsl_get_slider_setting('animationduration') ?>,
-				after: function(){
-					var wpslCaption = document.getElementById('wpsl-caption');
-					if(this.alt){
-						wpslCaption.style.visibility = 'visible';
-						jQuery('#wpsl-caption').html(this.alt);
-					}
-					else{
-						wpslCaption.style.visibility = 'hidden';
-						jQuery('#wpsl-caption').html('empty');
-					}
-				}
+/* ~~~~~~~~~~ Actions ~~~~~~~~~~ */
+
+add_action('wp_print_scripts','wps_enqueue_js'); 
+add_action('wp_print_styles', 'wps_enqueue_styles');
+add_shortcode('wps_slider','wps_slider_shortcode');
+
+/* ~~ Cycle Class ~~ */
+class WpsCycleSlider{
+	private static $_element_id,$_instance_number;
+	private $_limit,$_width,$_height;
+	public function __construct(){
+		$this->_limit = get_option('wps_slider_limit');
+		$this->_width = get_option('wps_slider_width');
+		$this->_height = get_option('wps_slider_height');
+		self::$_element_id = 'wps-slider' . self::$_instance_number += 1;
+	}	
+	/* Get Slider Setting */
+	private function get_option($name){
+		$slider_option = get_option('wps_slider_' . $name);
+		echo $slider_option;
+	}		
+	/* Print Script */
+	private function print_script($element_id){?>
+		<script type="text/javascript">
+			 jQuery(document).ready(function(){
+				jQuery('#<?php echo $element_id ?>').cycle({
+					fx: "<?php $this->get_option('animation') ?>", 
+					timeout: <?php $this->get_option('slideshowspeed') ?>, 
+					speed: <?php $this->get_option('animationduration') ?>,
+					start: function(){ setTimeout(wpsShowSlider,100); },
+					after: function(){
+						var wpsCaption = document.getElementById('<?php echo $element_id ?>-caption');
+						if(this.alt){
+							wpsCaption.style.visibility = 'visible';
+							jQuery('#<?php echo $element_id ?>-caption').html(this.alt);
+						}
+						else{
+							wpsCaption.style.visibility = 'hidden';
+							jQuery('#<?php echo $element_id ?>-caption').html('empty');
+						}
+					},
+					<?php echo get_option('wps_slider_extras') ?>
+				});
+			});
+			//Hyperlink
+			jQuery('#<?php echo $element_id ?> img').click(function (){
+				document.location.href = jQuery(this).attr('rel');
+			}); 
+			function wpsShowSlider(){ document.getElementById('<?php echo $element_id ?>-container').style.visibility = 'visible'; }
+		</script>
+		<?php	
+	}	
+	/* Print Slider Images */
+	private function print_slider_images($element_id){
+		$i = 1;
+		while($i <= $this->_limit){
+			$url_option_name = 'wps_slider_' . $i;
+			$link_option_name = 'wps_slider_' . $i . '_link';
+			$caption_option_name = 'wps_slider_' . $i . '_caption';
+			$slider_url =  get_option($url_option_name);
+			$slider_link =  get_option($link_option_name);
+			$slider_caption =  get_option($caption_option_name);
+			if(!$slider_url) break;
+			echo '<img src="' . $slider_url . '" alt="' . $slider_caption . '" rel="' . $slider_link . '" width="' . $this->_width . '" />';
+			$i++;
+		}
+	}	
+	/* Get Slider */
+	public function get_slider(){ /* style="overflow:hidden; height:<?php echo $this->_height ?>px" */
+		$element_id = self::$_element_id;
+		?>
+        <div id="<?php echo $element_id ?>-container">
+            <div id="<?php echo $element_id ?>-mask" style="overflow:hidden; height:<?php echo $this->_height ?>px">
+                <div id="<?php echo $element_id ?>">
+                    <?php $this->print_slider_images($element_id) ?>
+                </div>
+            </div>
+            <p id="<?php echo $element_id ?>-caption" style="visibility:hidden"></p>
+        </div>
+        <?php
+		$this->print_script($element_id);
+	}
+}//END WpsCycleSlider
+
+/* ~~ Flex Class ~~ */
+class WpsFlexSlider{
+	private static $_element_id,$_instance_number;
+	private $_limit,$_width,$_height;
+	public function __construct(){
+		$this->_limit = get_option('wps_slider_limit');
+		$this->_width = get_option('wps_slider_width');
+		self::$_element_id = 'wps-slider' . self::$_instance_number += 1;
+	}	
+	/* Get Slider Setting */
+	private function get_option($name){
+		$slider_option = get_option('wps_slider_' . $name);
+		echo $slider_option;
+	}	
+	/* Print Script */
+	private function print_script($element_id){?>
+		<script type="text/javascript">
+		jQuery(document).ready(function(){
+			jQuery('.flexslider').flexslider({
+				animation: "<?php $this->get_option('animation') ?>",
+				slideshowSpeed:  <?php $this->get_option('slideshowspeed') ?>,
+				animationDuration: <?php $this->get_option('slideshowspeed') ?>,   
+				start: function(){ setTimeout(wpsShowSlider,100); },
+				<?php echo get_option('wps_slider_extras') ?>
 			});
 		});
-		//Hyperlink
-		jQuery('#home-slider img').click(function (){
-			document.location.href = jQuery(this).attr('rel');
-		}); 
-	});
-	</script>
-	<?php	
-}
+		function wpsShowSlider(){ document.getElementById('<?php echo $element_id ?>-container').style.visibility = 'visible'; }
+		</script>
+		<?php		
+	}	
+	/* Print Slider Images */
+	private function print_slider_images($element_id){
+		$i = 1;
+		while($i <= $this->_limit){
+			$url_option_name = 'wps_slider_' . $i;
+			$link_option_name = 'wps_slider_' . $i . '_link';
+			$caption_option_name = 'wps_slider_' . $i . '_caption';
+			$slider_url =  get_option($url_option_name);
+			$slider_link =  get_option($link_option_name);
+			$slider_caption =  get_option($caption_option_name);
+			if(!$slider_url) break;
+			echo '<li>';
+			if($slider_link) echo '<a href="' . $slider_link . '">';
+			echo '<img src="' . $slider_url . '" alt="' . $slider_caption . '" rel="' . $slider_link . '" width="' . $this->_width . '" />';
+			if($slider_link) echo '</a>';
+			if($slider_caption) echo '<div class="flex-caption">' . $slider_caption . '</div>';
+			echo '</li>';
+			$i++;
+		}
+	}	
+	/* Get Slider */
+	public function get_slider(){
+		$element_id = self::$_element_id;
+		?>
+        <div id="<?php echo $element_id ?>-container">
+        	<div id="<?php echo $element_id ?>-mask">
+               	<div id="<?php echo $element_id ?>" class="flexslider" style="max-width:<?php echo $this->_width ?>px">
+                    <ul class="slides">
+                        <?php $this->print_slider_images($element_id) ?>
+                    </ul>
+            	</div>
+            </div>
+            <p id="<?php echo $element_id ?>-caption" style="visibility:hidden"></p>
+        </div>
+        <?php
+		$this->print_script($element_id);
+	}
+} //END WpsFlexSlider
 ?>
