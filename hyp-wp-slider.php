@@ -44,7 +44,7 @@ function wps_slider($shortcode = false){
 /* Enqueue Styles */
 function wps_enqueue_styles(){
 	if(is_home() || is_front_page()){
-		wp_enqueue_style('wps_style', WPS_PLUGIN . 'scripts/flexslider/flexslider.css');
+		wp_enqueue_style('wps_style', WPS_PLUGIN . 'sliders/flexslider/flexslider.css');
 	}
 }
 /* Enqueue Javascript */
@@ -53,9 +53,9 @@ function wps_enqueue_js(){
 		$chosen_animation = get_option('wps_slider_type');
 		wp_enqueue_script('jquery');
 		switch($chosen_animation){
-			case 'jQuery Cycle': wp_enqueue_script('wps_cycle', WPS_PLUGIN . 'scripts/cycle/jquery.cycle.all.js');
+			case 'jQuery Cycle': wp_enqueue_script('wps_cycle', WPS_PLUGIN . 'sliders/cycle/jquery.cycle.all.js');
 			break;
-			case 'Flex Slider': wp_enqueue_script('wps_flex', WPS_PLUGIN . 'scripts/flexslider/jquery.flexslider-min.js');
+			case 'Flex Slider': wp_enqueue_script('wps_flex', WPS_PLUGIN . 'sliders/flexslider/jquery.flexslider-min.js');
 			break;
 			default:
 			return;
@@ -170,7 +170,8 @@ class WpsFlexSlider{
 			jQuery('.flexslider').flexslider({
 				animation: "<?php $this->get_option('animation') ?>",
 				slideshowSpeed:  <?php $this->get_option('slideshowspeed') ?>,
-				animationDuration: <?php $this->get_option('slideshowspeed') ?>,   
+				animationDuration: <?php $this->get_option('animationduration') ?>,
+				controlsContainer: "#<?php echo $element_id ?>-container",   
 				start: function(){ setTimeout(wpsShowSlider,100); },
 				<?php echo get_option('wps_slider_extras') ?>
 			});
@@ -203,9 +204,9 @@ class WpsFlexSlider{
 	public function get_slider(){
 		$element_id = self::$_element_id;
 		?>
-        <div id="<?php echo $element_id ?>-container">
+        <div id="<?php echo $element_id ?>-container" style="position:relative;max-width:<?php echo $this->_width ?>px">
         	<div id="<?php echo $element_id ?>-mask">
-               	<div id="<?php echo $element_id ?>" class="flexslider" style="max-width:<?php echo $this->_width ?>px">
+               	<div id="<?php echo $element_id ?>" class="flexslider" style="">
                     <ul class="slides">
                         <?php $this->print_slider_images($element_id) ?>
                     </ul>
@@ -216,5 +217,5 @@ class WpsFlexSlider{
         <?php
 		$this->print_script($element_id);
 	}
-} //END WpsFlexSlider
+}//END WpsFlexSlider
 ?>
