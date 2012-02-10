@@ -66,7 +66,7 @@ function wps_settings_page(){
 			<?php settings_fields('wps_options') ?>
             <h3>Basic Slider Options<input type="submit" class="save-btn" value="<?php _e('save') ?>" /><span class="save-btn" onclick="wpsExpandCollapse('wps-help');">view help<span style="color:#222">&nbsp;&nbsp;|&nbsp;&nbsp;</span></span></h3>
             <div id="wps-help" style="display:none">
-            	<p>This plugin in only designed to display one single slider on the home page.<br />To render simply add <code>&lt;?php wps_slider() ?&gt;</code> to the index.php file or enter the <code>[wps_slider]</code> shortcode on the Wordpress page you are using as the home page: </p>
+            	<p>This plugin in only designed to display one single slider on the home page.<br />To render simply add <code>&lt;?php wps_slider() ?&gt;</code> to the index.php file or enter the <code>[wps_slider]</code> shortcode on the Wordpress page you are using as the home page.</p>
             	<ul>
                 	<li><strong>Slider</strong> - Choose a slider type from the dropdown</li>
                     <li><strong>Animation Type</strong> - Choose a transition type from the dropdown</li>
