@@ -4,7 +4,7 @@ Plugin Name: Hyp WP Slider
 Plugin URI: http://wp-slider.myhyperspace.com
 Description: An admin page slider controller for jQuery Cycle and Flex Slider
 Author: Adam J Nowak
-Version: 1.0
+Version: 1.11
 Author URI: http://hyperspatial.com
 */
 
@@ -17,8 +17,9 @@ Author URI: http://hyperspatial.com
 */
 
 //File Paths
-define('WPS_PLUGIN',WP_PLUGIN_URL . '/hyp-wp-slider/');
-define('WPS_PLUGIN_SERVERPATH',str_replace('hyp-wp-slider.php','',__FILE__) . '/');
+
+define('WPS_PLUGIN',WP_PLUGIN_URL . '/' . basename(dirname(__FILE__)) . '/');
+define('WPS_PLUGIN_SERVERPATH',dirname(__FILE__) . '/');
 
 //Files
 require(WPS_PLUGIN_SERVERPATH . 'admin.php');
@@ -95,24 +96,9 @@ class WpsCycleSlider{
 					timeout: <?php $this->get_option('slideshowspeed') ?>, 
 					speed: <?php $this->get_option('animationduration') ?>,
 					start: function(){ setTimeout(wpsShowSlider,100); },
-					after: function(){
-						var wpsCaption = document.getElementById('<?php echo $element_id ?>-caption');
-						if(this.alt){
-							wpsCaption.style.visibility = 'visible';
-							jQuery('#<?php echo $element_id ?>-caption').html(this.alt);
-						}
-						else{
-							wpsCaption.style.visibility = 'hidden';
-							jQuery('#<?php echo $element_id ?>-caption').html('empty');
-						}
-					},
 					<?php echo get_option('wps_slider_extras') ?>
 				});
 			});
-			//Hyperlink
-			jQuery('#<?php echo $element_id ?> img').click(function (){
-				document.location.href = jQuery(this).attr('rel');
-			}); 
 			function wpsShowSlider(){ document.getElementById('<?php echo $element_id ?>-container').style.visibility = 'visible'; }
 		</script>
 		<?php	
@@ -127,22 +113,26 @@ class WpsCycleSlider{
 			$slider_url =  get_option($url_option_name);
 			$slider_link =  get_option($link_option_name);
 			$slider_caption =  get_option($caption_option_name);
-			if(!$slider_url) break;
-			echo '<img src="' . $slider_url . '" alt="' . $slider_caption . '" rel="' . $slider_link . '" width="' . $this->_width . '" />';
+			if(!$slider_url){ $i++; continue; }
+			echo '<li>';
+			if($slider_link) echo '<a href="' . $slider_link . '">';
+			echo '<img src="' . $slider_url . '" alt="' . $slider_caption . '" width="' . $this->_width . '" />';
+			if($slider_link) echo '</a>';
+			if($slider_caption) echo '<div class="wps-caption">' . $slider_caption . '</div>';
+			echo '</li>';
 			$i++;
 		}
 	}	
 	/* Get Slider */
-	public function get_slider(){ /* style="overflow:hidden; height:<?php echo $this->_height ?>px" */
+	public function get_slider(){
 		$element_id = self::$_element_id;
 		?>
         <div id="<?php echo $element_id ?>-container">
             <div id="<?php echo $element_id ?>-mask" style="overflow:hidden; height:<?php echo $this->_height ?>px">
-                <div id="<?php echo $element_id ?>">
-                    <?php $this->print_slider_images($element_id) ?>
-                </div>
+                <ul id="<?php echo $element_id ?>" style="margin:0;padding:0;list-style-type:none">
+                	<?php $this->print_slider_images($element_id) ?>
+                </ul>
             </div>
-            <p id="<?php echo $element_id ?>-caption" style="visibility:hidden"></p>
         </div>
         <?php
 		$this->print_script($element_id);
@@ -190,12 +180,12 @@ class WpsFlexSlider{
 			$slider_url =  get_option($url_option_name);
 			$slider_link =  get_option($link_option_name);
 			$slider_caption =  get_option($caption_option_name);
-			if(!$slider_url) break;
+			if(!$slider_url){ $i++; continue; }
 			echo '<li>';
 			if($slider_link) echo '<a href="' . $slider_link . '">';
-			echo '<img src="' . $slider_url . '" alt="' . $slider_caption . '" rel="' . $slider_link . '" width="' . $this->_width . '" />';
+			echo '<img src="' . $slider_url . '" alt="' . $slider_caption . '" width="' . $this->_width . '" />';
 			if($slider_link) echo '</a>';
-			if($slider_caption) echo '<div class="flex-caption">' . $slider_caption . '</div>';
+			if($slider_caption) echo '<div class="flex-caption wps-caption">' . $slider_caption . '</div>';
 			echo '</li>';
 			$i++;
 		}
@@ -212,7 +202,6 @@ class WpsFlexSlider{
                     </ul>
             	</div>
             </div>
-            <p id="<?php echo $element_id ?>-caption" style="visibility:hidden"></p>
         </div>
         <?php
 		$this->print_script($element_id);
