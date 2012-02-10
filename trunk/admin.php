@@ -12,11 +12,12 @@ add_action('admin_menu','wps_create_admin_menu');
 function wps_register_options(){
 	global $wps_field_names;
 	$slider_option_array = wps_get_slider_dynamic_options();
-	$wps_field_names = array_merge($wps_field_names,$slider_option_array);
-	foreach($wps_field_names as $field_name){ register_setting('wps_options',$field_name); }
+	$wps_merged_field_names = array_merge($wps_field_names,$slider_option_array);
+	foreach($wps_merged_field_names as $field_name){ register_setting('wps_options',$field_name); }
 }
 /* Settings Page */
 function wps_settings_page(){
+	if(isset($_POST['wps_reset'])) wps_reset_slides();
 	wps_set_option_defaults();
 	global $wps_field_names,$wps_sliders,$wps_animations;
 	$slider_option_array = wps_get_slider_dynamic_options();
@@ -43,11 +44,12 @@ function wps_settings_page(){
 	div.left{float:left; margin:0 32px 20px 0}
 	.slide-card{width:598px; padding:1em; margin-bottom:1.5em; background:#E8E0D5; overflow:hidden}
 	.slide-card img{float:right; margin-top:37px}
-	.wrap .save-btn{float:right; border:none; background:none; color:#21759B; font-size:14px; font-weight:normal; cursor:pointer; margin:0; padding:0}
+	.wrap .save-btn{float:right; border:none; background:none; color:#21759B; font-size:14px; font-weight:normal; cursor:pointer; margin:0; padding:0; text-decoration:none; line-height:19px;}
 	.wrap .save-btn:hover{color:#D54E21}
 	.wrap #anim-dropdown{height:24px; font-size:13px}
 	textarea{min-width:392px; min-height:144px;}
 	#slider-dropdown,#anim-dropdown{min-width:100px}
+	#slide-reset{margin:-58px 0 0 527px}
 	</style>
 	<div class="wrap">
 		<h2>WP Slider Settings</h2>
@@ -99,7 +101,7 @@ function wps_settings_page(){
                 <textarea name="wps_slider_extras"><?php echo get_option('wps_slider_extras') ?></textarea><br />
                 <span class="help-text">Enter a comma separated list of custom slider options. Ex = pause: 1, random: 1</span>
             </p>
-            <h3>Images<input type="submit" class="save-btn" value="<?php _e('save') ?>" /></h3>
+            <h3>Images<input type="submit" class="save-btn" value="<?php _e('save') ?>" /><a href="<?php echo admin_url()?>upload.php" class="save-btn">media library<span style="color:#222">&nbsp;&nbsp;|&nbsp;&nbsp;</span></a></h3>
             <div class="clear">
             	<?php wps_get_slider_cards($slider_option_array) ?>
             </div>         
@@ -107,11 +109,22 @@ function wps_settings_page(){
                 <input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" />
             </p>
     	</form>
+        <form id="slide-reset" name="reset" method="post" action="">
+        	<p>
+                <input type="submit" name="wps_reset" class="button-primary" value="<?php _e('Reset Slides') ?>" onclick="return confirm('Are you 100% sure you want to delete all slide data?');"/>
+            </p>
+        </form>
     </div><!--/.wrap-->
     <?php
 }
 /* ~~~~~~~~~~~ Functions ~~~~~~~~~~~ */
 
+/* Ck Option */
+function wps_ck_option($field,$default){
+	$option_value = get_option($field);
+	if($field == 'wps_slider_limit') if($option_value > 10) update_option($field,'10');
+	if(!$option_value || $option_value == '') update_option($field,$default);
+}
 /* Get Animations */
 function wps_get_animations(){
 	$chosen_animation = get_option('wps_slider_type');
@@ -155,36 +168,40 @@ function wps_get_slider_dynamic_options(){
 		$slider_option_array[] = $option_name;
 		$slider_option_array[] = $option_name . '_link';
 		$slider_option_array[] = $option_name . '_caption';
-		if(!$slider_option) return $slider_option_array;
 		$i++;
+		if(!$slider_option) continue;
+		
 	}
 	return $slider_option_array;
+}
+/* Reset */
+function wps_reset_slides(){
+	$i = 1;
+	while($i <= 10){
+		$url_option_name = 'wps_slider_' . $i;
+		$link_option_name = 'wps_slider_' . $i . '_link';
+		$caption_option_name = 'wps_slider_' . $i . '_caption';
+		delete_option($url_option_name);
+		delete_option($link_option_name);
+		delete_option($caption_option_name);
+		$i++;
+	}
+	$url = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . '&wps_reset=true';
+	echo '<div class="updated settings-error" id="setting-error-settings_updated"> 
+<p><strong>Slide data reset</strong></p></div>';
+	echo '<meta http-equiv="refresh" content="1;url=' . $url . '">';
 }
 /* Defaults */
 function wps_set_option_defaults(){
 	global $wps_field_names;
 	foreach($wps_field_names as $field){
 		switch($field){
-			case 'wps_slider_type':
-			if(get_option('wps_slider_type') == '') update_option('wps_slider_type','jQuery Cycle');
-			break;
-			case 'wps_slider_limit':
-			if(get_option('wps_slider_limit') == '') update_option('wps_slider_limit','5');
-			break;
-			case 'wps_slider_width':
-			if(get_option('wps_slider_width') == '') update_option('wps_slider_width','600');
-			break;
-			case 'wps_slider_animation':
-			if(get_option('wps_slider_animation') == '') update_option('wps_slider_animation','fade');
-			break;
-			case 'wps_slider_slideshowspeed':
-			if(get_option('wps_slider_slideshowspeed') == '') update_option('wps_slider_slideshowspeed','4000');
-			break;
-			case 'wps_slider_animationduration':
-			if(get_option('wps_slider_animationduration') == '') update_option('wps_slider_animationduration','1000');
-			break;
-			default:
-			return;
+			case 'wps_slider_type': wps_ck_option('wps_slider_type','jQuery Cycle'); break;
+			case 'wps_slider_limit': wps_ck_option('wps_slider_limit','3');	break;
+			case 'wps_slider_width': wps_ck_option('wps_slider_width','600'); break;
+			case 'wps_slider_animation': wps_ck_option('wps_slider_animation','fade'); break;
+			case 'wps_slider_slideshowspeed': wps_ck_option('wps_slider_slideshowspeed','4000'); break;
+			case 'wps_slider_animationduration': wps_ck_option('wps_slider_animationduration','1000'); break;
 		}
 	}	
 	return true;
