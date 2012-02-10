@@ -44,18 +44,45 @@ function wps_settings_page(){
 	div.left{float:left; margin:0 32px 20px 0}
 	.slide-card{width:598px; padding:1em; margin-bottom:1.5em; background:#E8E0D5; overflow:hidden}
 	.slide-card img{float:right; margin-top:37px}
-	.wrap .save-btn{float:right; border:none; background:none; color:#21759B; font-size:14px; font-weight:normal; cursor:pointer; margin:0; padding:0; text-decoration:none; line-height:19px;}
+	.wrap .save-btn{float:right; border:none; background:none; color:#21759B; font-size:14px; font-weight:normal; cursor:pointer; margin:0; padding:0; text-decoration:none; line-height:18px;}
 	.wrap .save-btn:hover{color:#D54E21}
 	.wrap #anim-dropdown{height:24px; font-size:13px}
-	textarea{min-width:392px; min-height:144px;}
+	textarea{min-width:392px; min-height:80px;}
 	#slider-dropdown,#anim-dropdown{min-width:100px}
 	#slide-reset{margin:-58px 0 0 527px}
+	#wps-help{width:620px;border-bottom:1px solid #8E7556;margin:24px 0; padding-bottom:16px}
 	</style>
+    <script language="javascript">
+	function wpsExpandCollapse() {
+		for (var i=0; i<wpsExpandCollapse.arguments.length; i++) {
+			var element = document.getElementById(wpsExpandCollapse.arguments[i]);
+			element.style.display = (element.style.display == "none") ? "block" : "none";
+		}
+	}
+	</script>
 	<div class="wrap">
 		<h2>WP Slider Settings</h2>
 		<form name="settings" method="post" action="options.php">
 			<?php settings_fields('wps_options') ?>
-            <h3>Basic Slider Options<input type="submit" class="save-btn" value="<?php _e('save') ?>" /></h3>
+            <h3>Basic Slider Options<input type="submit" class="save-btn" value="<?php _e('save') ?>" /><span class="save-btn" onclick="wpsExpandCollapse('wps-help');">view help<span style="color:#222">&nbsp;&nbsp;|&nbsp;&nbsp;</span></span></h3>
+            <div id="wps-help" style="display:none">
+            	<p>This plugin in only designed to display one single slider on the home page.<br />To render simply add <code>&lt;?php wps_slider() ?&gt;</code> to the index.php file or enter the <code>[wps_slider]</code> shortcode on the Wordpress page you are using as the home page: </p>
+            	<ul>
+                	<li><strong>Slider</strong> - Choose a slider type from the dropdown</li>
+                    <li><strong>Animation Type</strong> - Choose a transition type from the dropdown</li>
+                    <li><strong>Slide Limit</strong> - Set the number of slides to be shown (max = 10)</li>
+                    <li><strong>Max Width</strong> - Maximum slide width in pixels</li>
+                    <li><strong>Slideshow Speed</strong> - Time in milliseconds that each slide is displayed</li>
+                    <li><strong>Animation Speed</strong> - Time in milliseconds for the transition between slides</li>
+                    <li><strong>Mask Height</strong> - (jQuery Cycle only) Slider wrapper that keeps page content from flowing under slides. If you cant see the caption try increasing this value.</li>
+                    <li></li>
+                    <li><strong>Custom Slider Options</strong> - jQuery options, see: <a href="http://jquery.malsup.com/cycle/options.html" target="_blank">Cycle Options</a> or <a href="http://flex.madebymufffin.com/" target="_blank">Flex Options</a></li>
+                    <li><strong>Image Url</strong> - Enter an image url and hyperlink url beginning with http:// - If there is no slide preview upon saving, check that the Url is correct</li>
+                    <li><strong>Hyperlink Url</strong> - Enter the web address your slide will link to, beginning with http://</li>
+                    <li><strong>Caption</strong> - Enter an image description to be displayed and used for the alt tag</li>
+                    <li><strong>Reset Slides Button</strong> - This button deletes all the slide data, this is useful for cleaning up old slides</li>
+            	</ul>
+            </div>
             <div class="left">
             	<label>Slider</label><br />
             	<select id="slider-dropdown" name="wps_slider_type" onChange="this.form.submit();">
@@ -96,7 +123,7 @@ function wps_settings_page(){
             	<label>Mask Height</label><br />
             	<input name="wps_slider_height" type="text" value="<?php echo $wps_slider_height ?>" size="6"/> px<br />
             </div>
-            <h3 class="clear">Custom Slider Options<input type="submit" class="save-btn" value="<?php _e('save') ?>" /></h3>
+            <h3 class="clear">Custom Slider Options</h3>
             <p>
                 <textarea name="wps_slider_extras"><?php echo get_option('wps_slider_extras') ?></textarea><br />
                 <span class="help-text">Enter a comma separated list of custom slider options. Ex = pause: 1, random: 1</span>
