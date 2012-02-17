@@ -4,7 +4,7 @@ Plugin Name: Hyp WP Slider
 Plugin URI: http://wp-slider.myhyperspace.com
 Description: An admin page slider controller for jQuery Cycle and Flex Slider
 Author: Adam J Nowak
-Version: 1.11
+Version: 1.12
 Author URI: http://hyperspatial.com
 */
 
@@ -88,15 +88,17 @@ class WpsCycleSlider{
 		echo $slider_option;
 	}		
 	/* Print Script */
-	private function print_script($element_id){?>
+	private function print_script($element_id){
+		$extras = get_option('wps_slider_extras');
+		?>
 		<script type="text/javascript">
 			 jQuery(document).ready(function(){
 				jQuery('#<?php echo $element_id ?>').cycle({
 					fx: "<?php $this->get_option('animation') ?>", 
 					timeout: <?php $this->get_option('slideshowspeed') ?>, 
 					speed: <?php $this->get_option('animationduration') ?>,
-					start: function(){ setTimeout(wpsShowSlider,100); },
-					<?php echo get_option('wps_slider_extras') ?>
+					start: function(){ setTimeout(wpsShowSlider,100); }<?php if($extras) echo ',' ?>
+					<?php echo $extras ?>
 				});
 			});
 			function wpsShowSlider(){ document.getElementById('<?php echo $element_id ?>-container').style.visibility = 'visible'; }
@@ -154,7 +156,9 @@ class WpsFlexSlider{
 		echo $slider_option;
 	}	
 	/* Print Script */
-	private function print_script($element_id){?>
+	private function print_script($element_id){
+		$extras = get_option('wps_slider_extras');
+		?>
 		<script type="text/javascript">
 		jQuery(document).ready(function(){
 			jQuery('.flexslider').flexslider({
@@ -162,8 +166,8 @@ class WpsFlexSlider{
 				slideshowSpeed:  <?php $this->get_option('slideshowspeed') ?>,
 				animationDuration: <?php $this->get_option('animationduration') ?>,
 				controlsContainer: "#<?php echo $element_id ?>-container",   
-				start: function(){ setTimeout(wpsShowSlider,100); },
-				<?php echo get_option('wps_slider_extras') ?>
+				start: function(){ setTimeout(wpsShowSlider,100); }<?php if($extras) echo ',' ?>
+				<?php echo $extras ?>
 			});
 		});
 		function wpsShowSlider(){ document.getElementById('<?php echo $element_id ?>-container').style.visibility = 'visible'; }
