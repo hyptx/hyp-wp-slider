@@ -4,7 +4,7 @@ Plugin Name: Hyp WP Slider
 Plugin URI: http://wp-slider.myhyperspace.com
 Description: An admin page slider controller for jQuery Cycle and Flex Slider
 Author: Adam J Nowak
-Version: 1.12
+Version: 1.13
 Author URI: http://hyperspatial.com
 */
 
